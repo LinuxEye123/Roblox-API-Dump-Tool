@@ -103,7 +103,7 @@ namespace RobloxApiDumpTool
             var history = await StudioDeployLogs.Get(channel);
 
             var latestDeploy = history.CurrentLogs_x64
-                .OrderBy(log => log.TimeStamp)
+                .OrderBy(log => log.Changelist)
                 .Last();
 
             return latestDeploy;
