@@ -187,7 +187,7 @@ namespace RobloxApiDumpTool
             var securityField = GetType().GetField("Security");
 
             if (!diffMode && Tags.Contains("Deprecated"))
-                elemClass += " deprecated"; // The CSS will strike-through this.
+                elemClass += " deprecated";
 
             if (!diffMode && DescriptorType != "Class" && DescriptorType != "Enum")
                 elemClass += " child";
@@ -252,6 +252,15 @@ namespace RobloxApiDumpTool
 
                                     if (!capabilities.IsEmpty())
                                         html.Span("Capabilities", capabilities.Value);
+
+                                    break;
+                                }
+                                else if (info.FieldType == typeof(SimulationAccess) && token == "SimulationAccess")
+                                {
+                                    var simAccess = (SimulationAccess)info.GetValue(this);
+
+                                    if (simAccess.Enabled)
+                                        html.Span("SimulationAccess", simAccess.Value);
 
                                     break;
                                 }

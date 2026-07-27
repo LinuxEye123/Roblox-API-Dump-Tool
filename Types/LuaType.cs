@@ -135,7 +135,7 @@ namespace RobloxApiDumpTool
                 case "Map":
                 {
                     html.Symbol("{ [");
-                    html.Span("Type", "any");
+                    html.Span("Type", AbsoluteName == "Dictionary" ? "string" : "any");
                     html.Symbol("]: ");
                     html.Span("Type", "any");
                     html.Symbol(" }");

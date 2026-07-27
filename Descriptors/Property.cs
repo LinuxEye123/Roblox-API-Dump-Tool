@@ -8,13 +8,14 @@ namespace RobloxApiDumpTool
         public LuaType ValueType;
         public ReadWriteSecurity Security;
         public Serialization Serialization;
+        public SimulationAccess SimulationAccess = false;
 
         public override string GetSchema(bool detailed = true)
         {
             string schema = base.GetSchema();
 
             if (detailed)
-                schema = "{DescriptorType} {ClassName}.{Name}: {ValueType} {Capabilities} {Security} {Serialization} {Tags} {ThreadSafety}";
+                schema = "{DescriptorType} {ClassName}.{Name}: {ValueType} {Tags} {Capabilities} {Security} {Serialization} {ThreadSafety} {SimulationAccess}";
 
             return schema;
         }
