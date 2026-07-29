@@ -291,7 +291,9 @@ namespace RobloxApiDumpTool
             {
                 const int minHidelevel = (int)SecurityType.RobloxScriptSecurity;
                 bool hidden = Tags.Contains("Hidden") || Tags.Contains("Deprecated");
+
                 var securityField = GetType().GetField("Security");
+                var capabilitiesField = GetType().GetField("Capabilities");
 
                 if (securityField != null && !hidden)
                 {
@@ -310,9 +312,19 @@ namespace RobloxApiDumpTool
                     }
                 }
 
+                if (capabilitiesField != null && !hidden)
+                {
+                    object value = capabilitiesField.GetValue(this);
+
+                    if (value is Capabilities caps)
+                    {
+                        var items = caps.Unioned;
+                        hidden = items.Contains("InternalTest");
+                    }
+                }
+
                 return hidden;
             }
-            
         }
 
         public virtual int CompareTo(object other)
