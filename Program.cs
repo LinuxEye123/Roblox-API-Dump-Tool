@@ -119,7 +119,7 @@ namespace RobloxApiDumpTool
 
                 if (argMap != null)
                 {
-                    var processArgsTask = Task.Run(() => ArgProcessor.Run(argMap));
+                    var processArgsTask = ArgProcessor.Run(argMap);
                     processArgsTask.Wait();
 
                     if (processArgsTask.Result)

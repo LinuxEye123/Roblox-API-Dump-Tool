@@ -108,7 +108,7 @@ namespace RobloxApiDumpTool
                                 memberDesc.Capabilities = new Capabilities();
 
                             if (memberDesc is FunctionDescriptor func)
-                                if (func.ReturnType.Name == "Instance" || func.ReturnType.Name == "RaycastResult")
+                                if (func.ReturnType.Name == "Instance" || func.ReturnType.Name == "RaycastResult" || func.ReturnType.Name == "Object")
                                     func.ReturnType.Optional = true;
 
                             classDesc.Members.Add(memberDesc);
@@ -171,7 +171,7 @@ namespace RobloxApiDumpTool
 
         private void setupV2(string filePath)
         {
-            // The only information currently worth extracting from V2 is class security.
+            // The only information currently worth extracting from V2 is class security, and simulation access.
             // When it has correct information parity with V1, or maybe it gets support for Luau type annotations, update accordingly?
             string jsonApiDump = File.ReadAllText(filePath);
 
@@ -239,8 +239,43 @@ namespace RobloxApiDumpTool
                                 throw new InvalidDataException("Unknown security type!");
                             }
                         }
+                    }
 
-                        Classes.Add(name, classDesc);
+                    var members = new List<MemberDescriptor>();
+                    classDesc.Members = members;
+
+                    foreach (var memberObj in classObj.GetValue("members", StringComparison.InvariantCulture))
+                    {
+                        var memberName = memberObj.Value<string>("name");
+                        var memberTypeStr = memberObj.Value<string>("memberType");
+                        var simulationAccess = memberObj.Value<bool>("simulationAccess");
+
+                        if (memberName == null)
+                            continue;
+
+                        if (memberTypeStr == null)
+                            continue;
+
+                        if (!simulationAccess)
+                            continue;
+
+                        if (!Enum.TryParse<MemberType>(memberTypeStr, out var memberType))
+                            continue;
+
+                        MemberDescriptor member;
+
+                        if (memberType == MemberType.Property)
+                            member = new PropertyDescriptor() { SimulationAccess = simulationAccess };
+                        else if (memberType == MemberType.Function)
+                            member = new FunctionDescriptor() { SimulationAccess = simulationAccess };
+                        else
+                            continue;
+
+                        member.Name = memberName;
+                        member.Class = classDesc;
+                        member.MemberType = memberType;
+
+                        members.Add(member);
                     }
                 }
             }
@@ -280,6 +315,28 @@ namespace RobloxApiDumpTool
                     continue;
 
                 class1.Security = class2.Security;
+
+                if (!class2.Members.Any())
+                    continue;
+
+                var memberMap = class1.Members.ToDictionary(classDesc => classDesc.Name);
+
+                foreach (var simAccessMember in class2.Members)
+                {
+                    if (!memberMap.TryGetValue(simAccessMember.Name, out MemberDescriptor member))
+                        continue;
+
+                    if (simAccessMember is FunctionDescriptor simFunc && member is FunctionDescriptor func)
+                    {
+                        func.SimulationAccess = simFunc.SimulationAccess;
+                        continue;
+                    }
+                    else if (simAccessMember is PropertyDescriptor simProp && member is PropertyDescriptor prop)
+                    {
+                        prop.SimulationAccess = simProp.SimulationAccess;
+                        continue;
+                    }
+                }
             }
         }
     }

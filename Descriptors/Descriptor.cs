@@ -187,7 +187,7 @@ namespace RobloxApiDumpTool
             var securityField = GetType().GetField("Security");
 
             if (!diffMode && Tags.Contains("Deprecated"))
-                elemClass += " deprecated"; // The CSS will strike-through this.
+                elemClass += " deprecated";
 
             if (!diffMode && DescriptorType != "Class" && DescriptorType != "Enum")
                 elemClass += " child";
@@ -255,6 +255,15 @@ namespace RobloxApiDumpTool
 
                                     break;
                                 }
+                                else if (info.FieldType == typeof(SimulationAccess) && token == "SimulationAccess")
+                                {
+                                    var simAccess = (SimulationAccess)info.GetValue(this);
+
+                                    if (simAccess.Enabled)
+                                        html.Span("SimulationAccess", simAccess.Value);
+
+                                    break;
+                                }
                             }
                         }
                         else
@@ -282,7 +291,9 @@ namespace RobloxApiDumpTool
             {
                 const int minHidelevel = (int)SecurityType.RobloxScriptSecurity;
                 bool hidden = Tags.Contains("Hidden") || Tags.Contains("Deprecated");
+
                 var securityField = GetType().GetField("Security");
+                var capabilitiesField = GetType().GetField("Capabilities");
 
                 if (securityField != null && !hidden)
                 {
@@ -301,9 +312,19 @@ namespace RobloxApiDumpTool
                     }
                 }
 
+                if (capabilitiesField != null && !hidden)
+                {
+                    object value = capabilitiesField.GetValue(this);
+
+                    if (value is Capabilities caps)
+                    {
+                        var items = caps.Unioned;
+                        hidden = items.Contains("InternalTest");
+                    }
+                }
+
                 return hidden;
             }
-            
         }
 
         public virtual int CompareTo(object other)

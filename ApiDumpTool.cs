@@ -113,12 +113,12 @@ namespace RobloxApiDumpTool
             }
         }
 
-        public static async Task<DeployLog> GetLastDeployLog(Channel channel)
+        public static async Task<DeployLog> GetLastDeployLog(string channel)
         {
-            var history = await StudioDeployLogs.Get(channel);
+            var history = await StudioDeployLogs.Get(true, channel);
 
-            var latestDeploy = history.CurrentLogs_x64
-                .OrderBy(log => log.Changelist)
+            var latestDeploy = history.CurrentLogs
+                .OrderBy(log => log.CommitId)
                 .Last();
 
             return latestDeploy;
@@ -367,11 +367,11 @@ namespace RobloxApiDumpTool
             else
             {
                 setStatus?.Invoke("Fetching deploy logs for " + channel);
-                var logs = await StudioDeployLogs.Get(channel);
+                var logs = await StudioDeployLogs.Get(true, channel);
 
-                var deployLog = logs.CurrentLogs_x64
+                var deployLog = logs.CurrentLogs
                     .Where(log => log.Version == versionId)
-                    .OrderBy(log => log.Changelist)
+                    .OrderBy(log => log.CommitId)
                     .LastOrDefault();
 
                 if (deployLog == null)

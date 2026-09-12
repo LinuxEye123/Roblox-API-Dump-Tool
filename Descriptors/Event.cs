@@ -12,7 +12,7 @@ namespace RobloxApiDumpTool
             string schema = base.GetSchema();
 
             if (detailed)
-                schema += "{Parameters} {Capabilities} {Security} {Tags} {ThreadSafety}";
+                schema += "{Parameters} {Tags} {Capabilities} {Security} {ThreadSafety}";
 
             return schema;
         }

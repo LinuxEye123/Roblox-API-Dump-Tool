@@ -7,6 +7,9 @@ namespace RobloxApiDumpTool
 {
     public sealed class FunctionDescriptor : MemberDescriptor
     {
+        [JsonIgnore]
+        public LuaType ReturnType;
+
         [JsonProperty("ReturnType")]
         internal JToken JsonReturnType
         {
@@ -30,10 +33,9 @@ namespace RobloxApiDumpTool
             }
         }
 
-        [JsonIgnore]
-        public LuaType ReturnType;
-        public Parameters Parameters;
         public Security Security;
+        public Parameters Parameters;
+        public SimulationAccess SimulationAccess = false;
 
         public override string GetSchema(bool detailed = true)
         {
@@ -41,7 +43,7 @@ namespace RobloxApiDumpTool
                 .Replace(".", ":");
 
             if (detailed)
-                schema += "{Parameters} -> {ReturnType} {Capabilities} {Security} {Tags} {ThreadSafety}";
+                schema += "{Parameters} -> {ReturnType} {Tags} {Capabilities} {Security} {ThreadSafety} {SimulationAccess}";
 
             return schema;
         }

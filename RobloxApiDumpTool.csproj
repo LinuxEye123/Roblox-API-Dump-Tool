@@ -98,6 +98,7 @@
     <Compile Include="Types\Parameters.cs" />
     <Compile Include="Types\Security.cs" />
     <Compile Include="Types\Serialization.cs" />
+    <Compile Include="Types\SimulationAccess.cs" />
     <Compile Include="Types\Tags.cs" />
     <Compile Include="Types\ThreadSafety.cs" />
   </ItemGroup>
