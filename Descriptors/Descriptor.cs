@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace RobloxApiDumpTool
@@ -36,6 +37,10 @@ namespace RobloxApiDumpTool
         public string Name;
         public string Default = "";
         public Dictionary<string, string> Metadata = new Dictionary<string, string>();
+        [JsonIgnore]
+        public string Documentation = "";
+        [JsonExtensionData]
+        private IDictionary<string, JToken> ExtensionData;
 
         [JsonProperty("Tags")]
         private JArray _
@@ -74,6 +79,80 @@ namespace RobloxApiDumpTool
 
         public void AddTag(string tag) => Tags.Add(tag);
         public bool HasTag(string tag) => Tags.Contains(tag);
+
+        private static readonly string[] DocumentationKeys =
+        {
+            "Description",
+            "Explanation",
+            "Examples",
+            "CodeSamples",
+            "Documentation",
+        };
+
+        private IEnumerable<string> GetDocumentationLines()
+        {
+            if (!string.IsNullOrWhiteSpace(Documentation))
+                yield return Documentation.Trim();
+
+            if (ExtensionData == null)
+                yield break;
+
+            foreach (string key in DocumentationKeys)
+            {
+                var entry = ExtensionData.FirstOrDefault(pair =>
+                    string.Equals(pair.Key, key, StringComparison.OrdinalIgnoreCase));
+
+                if (entry.Value == null || entry.Value.Type == JTokenType.Null)
+                    continue;
+
+                if (entry.Value.Type == JTokenType.String)
+                {
+                    string text = entry.Value.Value<string>();
+                    if (!string.IsNullOrWhiteSpace(text))
+                        yield return text.Trim();
+                    continue;
+                }
+
+                IEnumerable<JToken> items = entry.Value.Type == JTokenType.Array
+                    ? entry.Value.Children()
+                    : new[] { entry.Value };
+
+                foreach (JToken item in items)
+                {
+                    if (item.Type == JTokenType.String)
+                    {
+                        string text = item.Value<string>();
+                        if (!string.IsNullOrWhiteSpace(text))
+                            yield return text.Trim();
+                        continue;
+                    }
+
+                    if (item is JObject obj)
+                    {
+                        foreach (string property in new[] { "Text", "Description", "Explanation", "Code", "Value" })
+                        {
+                            string text = obj.GetValue(property, StringComparison.OrdinalIgnoreCase)?.Value<string>();
+                            if (!string.IsNullOrWhiteSpace(text))
+                            {
+                                yield return text.Trim();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void WriteDocumentation(ReflectionDumper buffer, int numTabs = 0)
+        {
+            foreach (string line in GetDocumentationLines())
+            {
+                buffer.NextLine();
+                buffer.Tab(numTabs);
+                buffer.Write("// ");
+                buffer.Write(line.Replace("\r\n", "\r\n" + new string('\t', numTabs) + "// "));
+            }
+        }
 
         public override string ToString() => Summary;
 
@@ -282,6 +361,11 @@ namespace RobloxApiDumpTool
                     search = closeToken + 1;
                 }
             });
+
+            foreach (string line in GetDocumentationLines())
+            {
+                html.OpenDiv("Documentation", () => html.Text(line));
+            }
         }
 
         [JsonIgnore]

@@ -66,6 +66,7 @@ namespace RobloxApiDumpTool
         {
             buffer.Tab(numTabs);
             buffer.Write(desc.Signature);
+            desc.WriteDocumentation(buffer, numTabs);
         };
 
         public static SignatureWriter DumpUsingHtml = (buffer, desc, numTabs) =>

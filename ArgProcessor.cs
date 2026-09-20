@@ -76,6 +76,9 @@ namespace RobloxApiDumpTool
                 if (!string.IsNullOrEmpty(apiFilePath2))
                     api.MungeV2(apiFilePath2);
 
+                if (argMap.ContainsKey("-docs"))
+                    await DocumentationProvider.EnrichAsync(api);
+
                 string result = "";
                 bool isPng = false;
 

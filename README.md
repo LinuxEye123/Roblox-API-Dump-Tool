@@ -10,6 +10,16 @@ The Roblox API Dump Tool is a utility program that allows you to browse a human-
 This project's source code aims to be a foundational reference for working with the JSON API Dump, and how you can interpret its data for your own projects!
 It also serves to replace Roblox's original API Dump, as this tool can generate a full dump of Roblox's API in a similar fashion to the original one, but with much more flexibility over how the data is presented.
 
+To include explanations and Luau examples from the Roblox Creator Hub in an export, add
+`-docs` to the command-line arguments. For example:
+
+```
+RobloxAPIDumpTool.exe -export LIVE -format HTML -docs -start
+```
+
+Documentation is fetched from the Creator Hub's Markdown API and is skipped for pages that
+are unavailable, so normal offline exports remain unchanged.
+
 # Download Link
 You can download the latest version of the program directly through this link:
 https://raw.githubusercontent.com/MaximumADHD/Roblox-API-Dump-Tool/master/RobloxAPIDumpTool.exe

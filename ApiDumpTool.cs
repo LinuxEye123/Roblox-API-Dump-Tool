@@ -512,6 +512,8 @@ namespace RobloxApiDumpTool
 
                     string apiFilePath2 = await downloadDump(resolved, ApiDumpSchema.V2, tempDir);
                     api.MungeV2(apiFilePath2);
+                    setStatus("Fetching Creator Hub documentation...");
+                    await DocumentationProvider.EnrichAsync(api);
 
                     if (isEarlyAccess)
                     {
