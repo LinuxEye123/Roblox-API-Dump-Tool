@@ -81,28 +81,35 @@ namespace RobloxApiDumpTool
 
             Builder.Clear();
             Html.Clear();
+            bool hasEntry = false;
 
-            foreach (ClassDescriptor classDesc in Database.Classes.Values)
+            foreach (ClassDescriptor classDesc in Sorted(Database.Classes.Values.ToList()))
             {
+                if (hasEntry)
+                    NextLine(2);
+
                 WriteSignature(this, classDesc, 0);
-                NextLine();
+                hasEntry = true;
 
                 foreach (MemberDescriptor memberDesc in Sorted(classDesc.Members))
                 {
-                    WriteSignature(this, memberDesc, 1);
                     NextLine();
+                    WriteSignature(this, memberDesc, 1);
                 }
             }
 
-            foreach (EnumDescriptor enumDesc in Database.Enums.Values)
+            foreach (EnumDescriptor enumDesc in Sorted(Database.Enums.Values.ToList()))
             {
+                if (hasEntry)
+                    NextLine(2);
+
                 WriteSignature(this, enumDesc, 0);
-                NextLine();
+                hasEntry = true;
 
                 foreach (EnumItemDescriptor itemDesc in Sorted(enumDesc.Items))
                 {
-                    WriteSignature(this, itemDesc, 1);
                     NextLine();
+                    WriteSignature(this, itemDesc, 1);
                 }
             }
 
