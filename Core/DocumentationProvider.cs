@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -13,6 +14,7 @@ namespace RobloxApiDumpTool
             "https://raw.githubusercontent.com/Roblox/creator-docs/main/content/en-us/reference/engine/classes/";
         private const string RenderedBaseUrl =
             "https://create.roblox.com/docs/reference/engine/classes/";
+        private const int RequestDelayMilliseconds = 200;
 
         public static async Task EnrichAsync(ReflectionDatabase database)
         {
@@ -22,18 +24,28 @@ namespace RobloxApiDumpTool
             using (var client = new WebClient())
             {
                 client.Headers[HttpRequestHeader.UserAgent] = "Roblox-API-Dump-Tool";
+                string cacheDirectory = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "RobloxApiDumpFiles", "Documentation");
+                Directory.CreateDirectory(cacheDirectory);
 
                 foreach (ClassDescriptor classDescriptor in database.Classes.Values)
                 {
                     try
                     {
-                        string yaml = await client.DownloadStringTaskAsync(
-                            BaseUrl + Uri.EscapeDataString(classDescriptor.Name) + ".yaml");
+                        string cachePath = Path.Combine(cacheDirectory, classDescriptor.Name + ".yaml");
+                        string yaml = await DownloadOrReadCachedAsync(
+                            client,
+                            BaseUrl + Uri.EscapeDataString(classDescriptor.Name) + ".yaml",
+                            cachePath);
                         ApplyYaml(classDescriptor, yaml);
 
-                        string markdown = await client.DownloadStringTaskAsync(
-                            RenderedBaseUrl + Uri.EscapeDataString(classDescriptor.Name) + ".md");
+                        string markdown = await DownloadOrReadCachedAsync(
+                            client,
+                            RenderedBaseUrl + Uri.EscapeDataString(classDescriptor.Name) + ".md",
+                            Path.Combine(cacheDirectory, classDescriptor.Name + ".md"));
                         ApplyCodeSamples(classDescriptor, markdown);
+                        await Task.Delay(RequestDelayMilliseconds);
                     }
 
                     catch (WebException)
@@ -43,6 +55,17 @@ namespace RobloxApiDumpTool
                 }
 
             }
+        }
+
+        private static async Task<string> DownloadOrReadCachedAsync(
+            WebClient client, string url, string cachePath)
+        {
+            if (File.Exists(cachePath))
+                return File.ReadAllText(cachePath);
+
+            string content = await client.DownloadStringTaskAsync(url);
+            File.WriteAllText(cachePath, content);
+            return content;
         }
 
         private static void ApplyCodeSamples(ClassDescriptor classDescriptor, string markdown)
