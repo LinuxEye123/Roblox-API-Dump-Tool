@@ -92,7 +92,7 @@ namespace RobloxApiDumpTool
         private IEnumerable<string> GetDocumentationLines()
         {
             if (!string.IsNullOrWhiteSpace(Documentation))
-                yield return Documentation.Trim();
+                yield return RemoveInheritedMembers(Documentation);
 
             if (ExtensionData == null)
                 yield break;
@@ -109,7 +109,7 @@ namespace RobloxApiDumpTool
                 {
                     string text = entry.Value.Value<string>();
                     if (!string.IsNullOrWhiteSpace(text))
-                        yield return text.Trim();
+                        yield return RemoveInheritedMembers(text);
                     continue;
                 }
 
@@ -125,7 +125,7 @@ namespace RobloxApiDumpTool
                     {
                         string text = item.Value<string>();
                         if (!string.IsNullOrWhiteSpace(text))
-                            yield return text.Trim();
+                            yield return RemoveInheritedMembers(text);
                         continue;
                     }
 
@@ -136,13 +136,23 @@ namespace RobloxApiDumpTool
                             string text = obj.GetValue(property, StringComparison.OrdinalIgnoreCase)?.Value<string>();
                             if (!string.IsNullOrWhiteSpace(text))
                             {
-                                yield return text.Trim();
+                                yield return RemoveInheritedMembers(text);
                                 break;
                             }
                         }
+
                     }
                 }
             }
+        }
+
+        private static string RemoveInheritedMembers(string documentation)
+        {
+            int inheritedIndex = documentation.IndexOf("## Inherited Members", StringComparison.OrdinalIgnoreCase);
+            if (inheritedIndex >= 0)
+                documentation = documentation.Substring(0, inheritedIndex);
+
+            return documentation.Trim();
         }
 
         public void WriteDocumentation(ReflectionDumper buffer, int numTabs = 0)
