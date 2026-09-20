@@ -113,9 +113,11 @@ namespace RobloxApiDumpTool
                     continue;
                 }
 
-                IEnumerable<JToken> items = entry.Value.Type == JTokenType.Array
-                    ? entry.Value.Children()
-                    : new[] { entry.Value };
+                IEnumerable<JToken> items;
+                if (entry.Value.Type == JTokenType.Array)
+                    items = entry.Value.Children();
+                else
+                    items = new List<JToken> { entry.Value };
 
                 foreach (JToken item in items)
                 {

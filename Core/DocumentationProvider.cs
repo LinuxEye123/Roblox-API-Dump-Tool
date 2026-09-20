@@ -36,41 +36,43 @@ namespace RobloxApiDumpTool
                         ApplyCodeSamples(classDescriptor, markdown);
                     }
 
-                    private static void ApplyCodeSamples(ClassDescriptor classDescriptor, string markdown)
-                    {
-                        foreach (MemberDescriptor member in classDescriptor.Members)
-                        {
-                            string heading = "### Method: " + classDescriptor.Name + ":" + member.Name;
-                            int start = markdown.IndexOf(heading, StringComparison.Ordinal);
-                            if (start < 0)
-                                continue;
-
-                            int end = markdown.IndexOf("\n### ", start + heading.Length, StringComparison.Ordinal);
-                            if (end < 0)
-                                end = markdown.Length;
-
-                            string section = markdown.Substring(start, end - start);
-                            Match sample = Regex.Match(section, @"```(?:lua|luau)\s*\r?\n(?<code>.*?)(?:\r?\n)```",
-                                RegexOptions.Singleline | RegexOptions.IgnoreCase);
-                            if (!sample.Success)
-                                continue;
-
-                            string code = sample.Groups["code"].Value.Trim();
-                            if (code.Length == 0)
-                                continue;
-
-                            member.Documentation = member.Documentation.TrimEnd()
-                                + Environment.NewLine + Environment.NewLine
-                                + "Code Sample" + Environment.NewLine
-                                + "```lua" + Environment.NewLine
-                                + code + Environment.NewLine + "```";
-                        }
-                    }
                     catch (WebException)
                     {
                         // Documentation is supplemental; an unavailable page must not stop a dump.
                     }
                 }
+
+            }
+        }
+
+        private static void ApplyCodeSamples(ClassDescriptor classDescriptor, string markdown)
+        {
+            foreach (MemberDescriptor member in classDescriptor.Members)
+            {
+                string heading = "### Method: " + classDescriptor.Name + ":" + member.Name;
+                int start = markdown.IndexOf(heading, StringComparison.Ordinal);
+                if (start < 0)
+                    continue;
+
+                int end = markdown.IndexOf("\n### ", start + heading.Length, StringComparison.Ordinal);
+                if (end < 0)
+                    end = markdown.Length;
+
+                string section = markdown.Substring(start, end - start);
+                Match sample = Regex.Match(section, @"```(?:lua|luau)\s*\r?\n(?<code>.*?)(?:\r?\n)```",
+                    RegexOptions.Singleline | RegexOptions.IgnoreCase);
+                if (!sample.Success)
+                    continue;
+
+                string code = sample.Groups["code"].Value.Trim();
+                if (code.Length == 0)
+                    continue;
+
+                member.Documentation = member.Documentation.TrimEnd()
+                    + Environment.NewLine + Environment.NewLine
+                    + "Code Sample" + Environment.NewLine
+                    + "```lua" + Environment.NewLine
+                    + code + Environment.NewLine + "```";
             }
         }
 
