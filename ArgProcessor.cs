@@ -82,7 +82,12 @@ namespace RobloxApiDumpTool
                 string result = "";
                 bool isPng = false;
 
-                if (format.ToUpperInvariant() == "PNG")
+                if (argMap.ContainsKey("-docs"))
+                {
+                    format = "md";
+                    result = dumper.DumpApi(ReflectionDumper.DumpUsingTxt);
+                }
+                else if (format.ToUpperInvariant() == "PNG")
                 {
                     isPng = true;
                     format = "html";
@@ -99,7 +104,7 @@ namespace RobloxApiDumpTool
                     result = dumper.DumpApi(ReflectionDumper.DumpUsingHtml);
                 }
 
-                string exportPath = Path.Combine(exportBin, channel + '.' + format);
+                string exportPath = Path.Combine(exportBin, "Roblox-API.md");
 
                 if (format == "html" || format == "png")
                 {

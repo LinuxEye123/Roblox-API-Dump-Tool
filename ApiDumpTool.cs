@@ -521,12 +521,7 @@ namespace RobloxApiDumpTool
                         deleteFileQuietly(apiFilePath2);
                     }
 
-                    string result;
-
-                    if (format == "HTML" || format == "PNG")
-                        result = dumper.DumpApi(ReflectionDumper.DumpUsingHtml, PostProcessHtml);
-                    else
-                        result = dumper.DumpApi(ReflectionDumper.DumpUsingTxt);
+                    string result = dumper.DumpApi(ReflectionDumper.DumpUsingTxt);
 
                     string directory;
 
@@ -534,15 +529,13 @@ namespace RobloxApiDumpTool
                     {
                         directory = tempDir;
 
-                        if (format == "HTML" || format == "PNG")
-                            File.WriteAllText(Path.Combine(tempDir, API_DUMP_CSS_FILE), Properties.Resources.ApiDumpStyler);
                     }
                     else
                     {
                         directory = new FileInfo(apiFilePath).DirectoryName;
                     }
 
-                    string resultPath = Path.Combine(directory, resolved.Channel + "-api-dump." + format.ToLower());
+                    string resultPath = Path.Combine(directory, "Roblox-API.md");
                     writeAndViewFile(resultPath, result);
                 });
             }
